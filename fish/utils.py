@@ -51,59 +51,65 @@ def process_image(model, classes):
   from keras_retinanet.utils.visualization import draw_box
   from IPython.display import Image, display
 
-  # save uploads to storage
-  uploaded = files.upload()
-  if len(uploaded) == 0:
+  try:
+
+    # save uploads to storage
+    uploaded = files.upload()
+    if len(uploaded) == 0:
+      return
+    else:
+      for file_name, v in uploaded.items():
+        break
+
+    # load image
+    image = read_image_bgr(file_name)
+    draw = cv2.cvtColor(image.copy(), cv2.COLOR_BGR2RGB)
+
+    # preprocess image  
+    X = preprocess_image(image)
+    X, scale = resize_image(X)
+    X = np.expand_dims(X, axis=0)
+
+    # make predictions
+    print("Making predictions...")
+    boxes, scores, labels = model.predict_on_batch(X)
+    boxes, scores, labels = boxes[0], scores[0], labels[0]
+    boxes, scores, labels = boxes[labels>0], scores[labels>0], labels[labels>0]
+    boxes /= scale    
+
+    if len(labels) == 0:
+      print("\nTop predictions: No fish detected")
+
+    else:  
+
+      # print top predictions
+      print("\nTop predictions:")
+      count = 1
+      seen_list = []
+      for i in range(min(10, len(labels))):
+        box, score, label = boxes[i], scores[i], labels[i]
+        if label not in seen_list:
+          print(f"{count}. {classes[label]} - {100*score:>0.1f}%")
+          seen_list.append(label)
+          count += 1
+
+      # get top prediction
+      box, score, label = boxes[0], scores[0], labels[0]
+
+      # draw box
+      draw_box(draw, box.astype(int), color=[0, 0, 1])
+
+    # plot image
+    print("\nDisplaying Image...")
+    fig = plt.figure()
+    fig.patch.set_facecolor('xkcd:mint green')  
+    plt.imshow(draw)
+    plt.axis('off')
+    plt.savefig(file_name, dpi=1000, pad_inches=0.0)
+    plt.close()
+    display(Image(file_name, height=X.shape[1]+100, width=X.shape[2]))
+    os.remove(file_name)
+
+  except:
+    print("Please press (Ctrl + Enter) to rerun this cell.")
     return
-  else:
-    for file_name, v in uploaded.items():
-      break
-
-  # load image
-  image = read_image_bgr(file_name)
-  draw = cv2.cvtColor(image.copy(), cv2.COLOR_BGR2RGB)
-
-  # preprocess image  
-  X = preprocess_image(image)
-  X, scale = resize_image(X)
-  X = np.expand_dims(X, axis=0)
-
-  # make predictions
-  print("Making predictions...")
-  boxes, scores, labels = model.predict_on_batch(X)
-  boxes, scores, labels = boxes[0], scores[0], labels[0]
-  boxes, scores, labels = boxes[labels>0], scores[labels>0], labels[labels>0]
-  boxes /= scale    
-
-  if len(labels) == 0:
-    print("\nTop predictions: No fish detected")
-
-  else:  
-
-    # print top predictions
-    print("\nTop predictions:")
-    count = 1
-    seen_list = []
-    for i in range(min(10, len(labels))):
-      box, score, label = boxes[i], scores[i], labels[i]
-      if label not in seen_list:
-        print(f"{count}. {classes[label]} - {100*score:>0.1f}%")
-        seen_list.append(label)
-        count += 1
-
-    # get top prediction
-    box, score, label = boxes[0], scores[0], labels[0]
-
-    # draw box
-    draw_box(draw, box.astype(int), color=[0, 0, 1])
-
-  # plot image
-  print("\nDisplaying Image...")
-  fig = plt.figure()
-  fig.patch.set_facecolor('xkcd:mint green')  
-  plt.imshow(draw)
-  plt.axis('off')
-  plt.savefig(file_name, dpi=1000, pad_inches=0.0)
-  plt.close()
-  display(Image(file_name, height=X.shape[1]+100, width=X.shape[2]))
-  os.remove(file_name)
