@@ -40,7 +40,7 @@ def load_data():
   return model, classes
 
 
-def process_image():
+def process_image(model, classes):
          
   import os, cv2
   import numpy as np
