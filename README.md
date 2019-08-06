@@ -6,7 +6,13 @@ Run the following cells in a Google Colab notebook.
 
 ### 1. Clone this repo
 ```
-!git clone https://github.com/mattmotoki/fish-ml-app-utils.git
+import os
+os.system("rm -rf fish-ml-app-utils")
+os.system("git clone https://github.com/mattmotoki/fish-ml-app.git")
+
+import sys
+sys.path.append("fish-ml-app-utils")
+from fish.utils import setup_env, load_data, process_image
 ```
 
 ### 2. Setup the environment 
