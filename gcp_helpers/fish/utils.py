@@ -1,4 +1,4 @@
-def setup_env():
+def setup_env(epoch=8):
   import os, sys, boto3
   import pandas as pd
   from botocore import UNSIGNED
@@ -14,7 +14,7 @@ def setup_env():
   s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
   
   print("Downloading model from S3...")
-  s3.download_file("fisheries-deep-learning-models", "resnet50_csv_converted_08.h5", "weights.h5")
+  s3.download_file("fisheries-deep-learning-models", f"resnet50_csv_converted_0{epoch}.h5", "weights.h5")
     
   print("Downloading meta data from S3...")
   s3.download_file("fisheries-deep-learning-models", "classes.csv", "classes.csv")
@@ -98,7 +98,7 @@ def process_image(model, classes):
 
       # draw box
       draw_box(draw, box.astype(int), color=[0, 0, 1])
-
+    
     # plot image
     print("\nDisplaying Image...")
     fig = plt.figure()
